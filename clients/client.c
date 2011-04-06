@@ -75,7 +75,7 @@ void* do_connect(struct addrinfo *servinfo)
             continue;
         }
 #if 1
-        for (j=1; j<=g_nhello; ++j) {
+        for (j=0; j<g_nhello; ++j) {
             for (k=0; k<g_noverwrap; ++k) {
                 sockfd = socks[k];
                 send(sockfd, "hello\n", 6, 0);
@@ -89,12 +89,9 @@ void* do_connect(struct addrinfo *servinfo)
                 if (numbytes != 6) {
                     printf("Recieved %d bytes\n", numbytes);
                 }
-                if (j==g_nhello) {
-                    close(sockfd);
-                }
             }
         }
-#else
+
         for (k=0; k<g_noverwrap; ++k) {
             close(socks[k]);
         }
