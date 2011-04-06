@@ -100,7 +100,7 @@ static void setnonblocking(int fd)
     fcntl(fd, F_SETFL, flag | O_NONBLOCK);
 }
 
-static int setup_server_socket()
+static int setup_server_socket(int port)
 {
     int sock;
     struct sockaddr_in sin;
@@ -113,10 +113,10 @@ static int setup_server_socket()
     setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof yes);
 
     memset(&sin, 0, sizeof sin);
-    
+
     sin.sin_family = AF_INET;
     sin.sin_addr.s_addr = htonl(INADDR_ANY);
-    sin.sin_port = htons(DEFAULT_PORT);
+    sin.sin_port = htons(port);
 
     if (bind(sock, (struct sockaddr *) &sin, sizeof sin) < 0) {
         close(sock);
@@ -133,23 +133,38 @@ static int setup_server_socket()
     return sock;
 }
 
-int main()
+int main(int argc, char *argv[])
 {
     struct epoll_event ev;
     struct epoll_event events[MAX_EVENTS];
     int listener, epfd;
+
+    int opt, port=DEFAULT_PORT;
+
+    while (-1 != (opt = getopt(argc, argv, "p:"))) {
+        switch (opt) {
+        case 'p':
+            port = atoi(optarg);
+            break;
+        default:
+            fprintf(stderr, "Unknown option: %c\n", opt);
+            return 1;
+        }
+    }
 
     if ((epfd = epoll_create(128)) < 0) {
         perror("epoll_create");
         exit(-1);
     }
 
-    listener = setup_server_socket();
+    listener = setup_server_socket(DEFAULT_PORT);
 
     memset(&ev, 0, sizeof ev);
     ev.events = EPOLLIN;
     ev.data.fd = listener;
     epoll_ctl(epfd, EPOLL_CTL_ADD, listener, &ev);
+
+    printf("Listening port %d\n", port);
 
     for (;;) {
         int i;
