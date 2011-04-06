@@ -139,7 +139,7 @@ int main()
     struct epoll_event events[MAX_EVENTS];
     int listener, epfd;
 
-    if ((epfd = epoll_create1(EPOLL_CLOEXEC)) < 0) {
+    if ((epfd = epoll_create(128)) < 0) {
         perror("epoll_create");
         exit(-1);
     }
