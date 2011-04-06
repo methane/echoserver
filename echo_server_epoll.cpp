@@ -157,7 +157,7 @@ int main(int argc, char *argv[])
         exit(-1);
     }
 
-    listener = setup_server_socket(DEFAULT_PORT);
+    listener = setup_server_socket(port);
 
     memset(&ev, 0, sizeof ev);
     ev.events = EPOLLIN;
