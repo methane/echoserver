@@ -25,6 +25,8 @@
 #define NUMLOOP (1000)
 #define NUMTHREAD (1)
 
+#define BIND_SOURCE_PORT (0)
+
 int g_nloop;
 int g_nhello;
 int g_noverwrap;
@@ -37,6 +39,24 @@ void *get_in_addr(struct sockaddr *sa)
     }
 
     return &(((struct sockaddr_in6*)sa)->sin6_addr);
+}
+
+void prepare(int sock)
+{
+    //int yes=1;
+
+    //setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof yes);
+
+#if BIND_SOURCE_PORT
+    {
+        struct sockaddr_in sin;
+        memset(&sin, 0, sizeof sin);
+        sin.sin_family = AF_INET;
+        sin.sin_addr.s_addr = htonl(INADDR_ANY);
+        sin.sin_port = htons(20000);
+        bind(sock, (struct sockaddr*)&sin, sizeof(sin));
+    }
+#endif
 }
 
 void* do_connect(struct addrinfo *servinfo)
@@ -60,6 +80,7 @@ void* do_connect(struct addrinfo *servinfo)
                     continue;
                 }
 
+                prepare(sockfd);
                 if (connect(sockfd, p->ai_addr, p->ai_addrlen) == -1) {
                     close(sockfd);
                     perror("client: connect");
