@@ -169,9 +169,6 @@ int main(int argc, char *argv[])
     for (;;) {
         int i;
         int nfd = epoll_wait(epfd, events, MAX_EVENTS, -1);
-        if (nfd > 40) {
-            printf("Recieved %d events.\n", nfd);
-        }
 
         for (i = 0; i < nfd; i++) {
             if (events[i].data.fd == listener) {
