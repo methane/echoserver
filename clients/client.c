@@ -11,6 +11,7 @@
 #include <sys/types.h>
 #include <netinet/in.h>
 #include <sys/socket.h>
+#include <time.h>
 
 #include <arpa/inet.h>
 
@@ -30,6 +31,7 @@
 int g_nloop;
 int g_nhello;
 int g_noverwrap;
+long g_restimes[1000001];
 
 // get sockaddr, IPv4 or IPv6:
 void *get_in_addr(struct sockaddr *sa)
@@ -97,6 +99,8 @@ void* do_connect(struct addrinfo *servinfo)
         }
 #if 1
         for (j=0; j<g_nhello; ++j) {
+            struct timespec t1, t2;
+            clock_gettime(CLOCK_MONOTONIC, &t1);
             for (k=0; k<g_noverwrap; ++k) {
                 sockfd = socks[k];
                 send(sockfd, "hello\n", 6, 0);
@@ -111,6 +115,12 @@ void* do_connect(struct addrinfo *servinfo)
                     printf("Recieved %d bytes\n", numbytes);
                 }
             }
+            clock_gettime(CLOCK_MONOTONIC, &t2);
+            long long t = t2.tv_sec * 1000000000LL + t2.tv_nsec;
+            t          -= t1.tv_sec * 1000000000LL + t1.tv_nsec;
+            t /= 1000; // ns => us
+            if (t > 1000000) t=1000000;
+            g_restimes[t]++;
         }
 
         for (k=0; k<g_noverwrap; ++k) {
@@ -122,12 +132,37 @@ void* do_connect(struct addrinfo *servinfo)
     return NULL;
 }
 
+void show_restime_res(int start, int stop, int step)
+{
+    for (int i = start; i < stop; i += step) {
+        long sum = 0;
+        for (int j = 0; j < step; ++j) sum += g_restimes[i+j];
+        if (start < 1000) {
+            printf(" <%5d [us]: %d\n", i+step, sum);
+        } else {
+            printf(" <%5d [ms]: %d\n", (i+step)/1000, sum);
+        }
+    }
+}
+
+void show_restimes()
+{
+    show_restime_res(0, 10, 1);
+    show_restime_res(10, 100, 10);
+    show_restime_res(100, 1000, 100);
+    show_restime_res(1000, 10000, 1000);
+    show_restime_res(10000, 100000, 10000);
+    show_restime_res(100000, 1000000, 100000);
+    printf(" >= 1sec: %d\n", g_restimes[1000000]);
+}
+
 int main(int argc, char *argv[])
 {
     struct addrinfo hints, *servinfo, *p;
     int rv;
     int opt;
 
+    int verbose = 0;
     int nthread = NUMTHREAD;
     g_nloop = NUMLOOP;
     g_nhello = 0;
@@ -136,7 +171,7 @@ int main(int argc, char *argv[])
     const char *port = PORT;
     const char *host = NULL;
 
-    while (-1 != (opt = getopt(argc, argv, "n:h:c:p:o:"))) {
+    while (-1 != (opt = getopt(argc, argv, "n:h:c:p:o:v"))) {
         switch (opt) {
         case 'n':
             g_nloop = atoi(optarg);
@@ -153,6 +188,9 @@ int main(int argc, char *argv[])
         case 'o':
             g_noverwrap = atoi(optarg);
             break;
+        case 'v':
+            verbose = 1;
+            break;
         default:
             fprintf(stderr, "Unknown option: %c\n", opt);
             return 1;
@@ -160,7 +198,7 @@ int main(int argc, char *argv[])
     }
 
     if (optind >= argc) {
-        fprintf(stderr,"usage: client [-n loops] [-c threads] [-p port] hostname\n");
+        fprintf(stderr,"usage: client [-v] [-n connect count] [-h hellos per connec] [-c threads] [-p port] hostname\n");
         return 2;
     }
 
@@ -198,6 +236,8 @@ int main(int argc, char *argv[])
     }
 
     freeaddrinfo(servinfo); // all done with this structure
+    if (verbose)
+        show_restimes();
 
     return 0;
 }
