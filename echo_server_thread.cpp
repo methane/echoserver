@@ -19,6 +19,7 @@
 using namespace std;
 
 static int listener; //fd
+static volatile unsigned long process_count;
 
 static void setnonblocking(int fd)
 {
@@ -89,6 +90,7 @@ restart:
                     }
                     m += o;
                 }
+                __sync_fetch_and_add(&process_count, 1);
                 continue;
             }
             if (n < 0) {
@@ -129,8 +131,12 @@ int main(int argc, char *argv[])
         pthread_create(&threads[i], NULL, worker, NULL);
     }
 
+    unsigned long prev=0, count=0;
     for (;;) {
         sleep(1);
+        count = __sync_fetch_and_add(&process_count, 0);
+        printf("processed %llu requests.\n", count-prev);
+        prev = count;
     }
 
     return 0;

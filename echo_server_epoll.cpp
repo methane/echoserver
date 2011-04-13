@@ -10,12 +10,15 @@
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <sys/epoll.h>
+#include <sys/time.h>
 #include <netinet/in.h>
 
 #define DEFAULT_PORT (5000)
 #define MAX_EVENTS   (64)
 
 using namespace std;
+
+static volatile unsigned long long process_count;
 
 struct conn {
     int sock;
@@ -166,6 +169,11 @@ int main(int argc, char *argv[])
 
     printf("Listening port %d\n", port);
 
+    unsigned long proc = 0;
+    struct timeval tim, tim_prev;
+    gettimeofday(&tim_prev, NULL);
+    tim_prev = tim;
+
     for (;;) {
         int i;
         int nfd = epoll_wait(epfd, events, MAX_EVENTS, -1);
@@ -190,11 +198,24 @@ int main(int argc, char *argv[])
             } else {
                 conn *pc = (conn*)events[i].data.ptr;
                 pc->handle();
+                proc++;
                 if (pc->done()) {
                     epoll_ctl(epfd, EPOLL_CTL_DEL, pc->sock, &ev);
                     delete pc;
                 }
             }
+        }
+
+        if (proc > 100000) {
+            proc = 0;
+            gettimeofday(&tim, NULL);
+            timersub(&tim, &tim_prev, &tim_prev);
+            long long d = tim_prev.tv_sec;
+            d *= 1000;
+            d += tim_prev.tv_usec / 1000;
+            printf("%lld msec per 100000 req\n", d);
+            printf("%lld reqs per sec\n", 100000LL*1000/d);
+            tim_prev = tim;
         }
     }
     return 0;
