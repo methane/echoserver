@@ -21,12 +21,6 @@ using namespace std;
 static int listener; //fd
 static volatile unsigned long process_count;
 
-static void setnonblocking(int fd)
-{
-    int flag = fcntl(fd, F_GETFL, 0);
-    fcntl(fd, F_SETFL, flag | O_NONBLOCK);
-}
-
 static int setup_server_socket(int port, bool block=false)
 {
     int sock;
@@ -135,7 +129,7 @@ int main(int argc, char *argv[])
     for (;;) {
         sleep(1);
         count = __sync_fetch_and_add(&process_count, 0);
-        printf("processed %llu requests.\n", count-prev);
+        printf("processed %lu requests.\n", count-prev);
         prev = count;
     }
 
