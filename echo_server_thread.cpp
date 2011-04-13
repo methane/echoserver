@@ -77,7 +77,7 @@ restart:
         }
 
         for (;;) {
-            int n = ::read(client, buf, 2048);
+            int n = ::read(client, buf, 128);
             if (n > 0) {
                 int m = 0;
                 while (m < n) {
