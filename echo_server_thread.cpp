@@ -97,18 +97,33 @@ restart:
     return NULL;
 }
 
+void *busy_loop(void* notused)
+{
+    int a=1,b=1,c;
+    for (;;) {
+        c = a+b;
+        a = b;
+        b = c;
+    }
+    return NULL;
+}
+
 int main(int argc, char *argv[])
 {
     int opt, port=DEFAULT_PORT;
     int num_thread=1;
+    int num_busy=0;
 
-    while (-1 != (opt = getopt(argc, argv, "p:t:"))) {
+    while (-1 != (opt = getopt(argc, argv, "p:c:b:"))) {
         switch (opt) {
         case 'p':
             port = atoi(optarg);
             break;
-        case 't':
+        case 'c':
             num_thread = atoi(optarg);
+            break;
+        case 'b':
+            num_busy = atoi(optarg);
             break;
         default:
             fprintf(stderr, "Unknown option: %c\n", opt);
@@ -117,12 +132,18 @@ int main(int argc, char *argv[])
     }
 
     listener = setup_server_socket(port);
-    printf("Listening port %d\n", port);
+    printf("Listening port (-p): %d\n", port);
+    printf("Worker thread (-c): %d\n", num_thread);
+    printf("Busy thread (-b): %d\n", num_busy);
 
     pthread_t *threads = (pthread_t*)malloc(sizeof(pthread_t) * num_thread);
 
     for (int i = 0; i < num_thread; ++i) {
         pthread_create(&threads[i], NULL, worker, NULL);
+    }
+    for (int i = 0; i < num_busy; ++i) {
+        pthread_t t;
+        pthread_create(&t, NULL, busy_loop, NULL);
     }
 
     unsigned long prev=0, count=0;
