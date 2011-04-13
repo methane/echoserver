@@ -89,6 +89,7 @@ restart:
                     }
                     m += o;
                 }
+                continue;
             }
             if (n < 0) {
                 perror("read");
