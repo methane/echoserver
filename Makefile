@@ -1,4 +1,4 @@
-CXXFLAGS=-O2 -g -Wall
+CXXFLAGS=-O2 -g -Wall -pthread
 
 echo_server_epoll: echo_server_epoll.cpp
 	$(CXX) $(CXXFLAGS) -o $@ $<

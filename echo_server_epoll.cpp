@@ -27,7 +27,7 @@ struct conn {
     conn(int sock) :
         sock(sock), buf(0), head(0), tail(0), read_end(false), error(false)
     {
-        alloced = 2048;
+        alloced = 32;
         buf = (char*)malloc(alloced);
         if (!buf) {
             puts("No memory.\n");
@@ -38,8 +38,8 @@ struct conn {
 
     void read() {
         for (;;) {
-            if (alloced - tail < 512) {
-                if (alloced - (tail - head) < 1024) {
+            if (alloced - tail < 64) {
+                if (alloced - (tail - head) < 128) {
                     alloced *= 2;
                     buf = (char*)realloc(buf, alloced);
                     if (!buf) {
@@ -169,6 +169,9 @@ int main(int argc, char *argv[])
     for (;;) {
         int i;
         int nfd = epoll_wait(epfd, events, MAX_EVENTS, -1);
+        if (nfd > 40) {
+            printf("Recieved %d events.\n", nfd);
+        }
 
         for (i = 0; i < nfd; i++) {
             if (events[i].data.fd == listener) {

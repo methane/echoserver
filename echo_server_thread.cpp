@@ -15,88 +15,10 @@
 #include <pthread.h>
 
 #define DEFAULT_PORT (5000)
-#define MAX_EVENTS   (64)
 
 using namespace std;
 
 static int listener; //fd
-
-struct conn {
-    int sock;
-    char *buf;
-    size_t alloced, head, tail;
-    bool read_end;
-    bool error;
-
-    conn(int sock) :
-        sock(sock), buf(0), head(0), tail(0), read_end(false), error(false)
-    {
-        alloced = 2048;
-        buf = (char*)malloc(alloced);
-        if (!buf) {
-            puts("No memory.\n");
-            exit(-1);
-        }
-    }
-    ~conn() { close(sock); }
-
-    void read() {
-        for (;;) {
-            if (alloced - tail < 512) {
-                if (alloced - (tail - head) < 1024) {
-                    alloced *= 2;
-                    buf = (char*)realloc(buf, alloced);
-                    if (!buf) {
-                        puts("No memory(realloc)");
-                        exit(-1);
-                    }
-                } else {
-                    memmove(buf, buf+head, tail-head);
-                    tail -= head;
-                    head = 0;
-                }
-            }
-            //printf("reading: %d, %p, %ld\n", sock, buf+tail, alloced-tail);
-            int n = ::read(sock, buf+tail, alloced-tail);
-            if (n < 0) {
-                if (errno == EAGAIN) {
-                    break;
-                }
-                perror("read");
-                error = true;
-                return;
-            }
-            if (n == 0) {
-                read_end = true;
-                return;
-            }
-            tail += n;
-        }
-    }
-    int write() {
-        while (head < tail) {
-            int n = ::write(sock, buf+head, tail-head);
-            if (n < 0) {
-                if (errno == EAGAIN) break;
-                perror("write");
-                error = true;
-                return -1;
-            }
-            // n >= 0
-            head += n;
-        }
-        return tail-head;
-    }
-    void handle() {
-        if (error) return;
-        read();
-        if (error) return;
-        write();
-    }
-    int done() const {
-        return error || (read_end && (tail == head));
-    }
-};
 
 static void setnonblocking(int fd)
 {
@@ -139,7 +61,7 @@ static int setup_server_socket(int port, bool block=false)
 
 void* worker(void *data)
 {
-    char *buf = (char*)malloc(2048);
+    char *buf = (char*)malloc(128);
     if (!buf) {
         fprintf(stderr, "worker: no memory.\n");
         return NULL;
@@ -180,10 +102,6 @@ restart:
 
 int main(int argc, char *argv[])
 {
-    struct epoll_event ev;
-    struct epoll_event events[MAX_EVENTS];
-    int epfd;
-
     int opt, port=DEFAULT_PORT;
     int num_thread=1;
 
