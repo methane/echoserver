@@ -1,6 +1,4 @@
-/*
- ** client.c -- a stream socket client demo
- */
+/** Echo client. */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -94,6 +92,7 @@ void* do_connect(struct addrinfo *servinfo)
     sleep(1);
 
     socks = malloc(sizeof(int)*g_noverwrap);
+    memset(socks, 0, sizeof(int)*g_noverwrap);
 
     for (i = 0; i < g_nloop; ++i) {
         // loop through all the results and connect to the first we can
@@ -112,7 +111,6 @@ void* do_connect(struct addrinfo *servinfo)
                     perror("client: socket");
                     continue;
                 }
-
                 prepare(sockfd);
                 if (connect(sockfd, p->ai_addr, p->ai_addrlen) == -1) {
                     close(sockfd);
@@ -145,12 +143,6 @@ void* do_connect(struct addrinfo *servinfo)
             }
         }
 
-        for (k=0; k<g_noverwrap; ++k) {
-            close(socks[k]);
-        }
-        if (!servinfo) {
-            freeaddrinfo(pinfo);
-        }
         {
             clock_gettime(CLOCK_MONOTONIC, &t2);
             long long t = t2.tv_sec * 1000000000LL + t2.tv_nsec;
@@ -158,6 +150,12 @@ void* do_connect(struct addrinfo *servinfo)
             t /= 1000; // ns => us
             if (t > 1000000) t=1000000;
             g_restimes[t]++;
+        }
+        for (k=0; k<g_noverwrap; ++k) {
+            close(socks[k]);
+        }
+        if (!servinfo) {
+            freeaddrinfo(pinfo);
         }
     }
     free(socks);
