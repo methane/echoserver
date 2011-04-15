@@ -31,7 +31,11 @@
 int g_nloop;
 int g_nhello;
 int g_noverwrap;
+int g_resolve;
 long g_restimes[1000001];
+
+const char *host;
+const char *port;
 
 // get sockaddr, IPv4 or IPv6:
 void *get_in_addr(struct sockaddr *sa)
@@ -41,6 +45,23 @@ void *get_in_addr(struct sockaddr *sa)
     }
 
     return &(((struct sockaddr_in6*)sa)->sin6_addr);
+}
+
+struct addrinfo* getaddr()
+{
+    struct addrinfo hints, *servinfo;
+    int rv;
+
+    memset(&hints, 0, sizeof hints);
+    hints.ai_family = AF_UNSPEC;
+    hints.ai_socktype = SOCK_STREAM;
+
+    if ((rv = getaddrinfo(host, port, &hints, &servinfo)) != 0) {
+        fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(rv));
+        return NULL;
+    }
+
+    return servinfo;
 }
 
 void prepare(int sock)
@@ -63,17 +84,27 @@ void prepare(int sock)
 
 void* do_connect(struct addrinfo *servinfo)
 {
-    struct addrinfo *p = servinfo;
+    struct addrinfo *p, *pinfo;
     int sockfd, numbytes;  
     char buf[MAXDATASIZE];
     int *socks = NULL;
     int i, j, k;
+    struct timespec t1, t2;
+
+    sleep(1);
 
     socks = malloc(sizeof(int)*g_noverwrap);
 
     for (i = 0; i < g_nloop; ++i) {
         // loop through all the results and connect to the first we can
+        clock_gettime(CLOCK_MONOTONIC, &t1);
 
+        if (servinfo) {
+            pinfo = servinfo;
+        } else {
+            pinfo = getaddr();
+        }
+        p = pinfo;
         k = 0;
         for (k=0; k<g_noverwrap; ++k) {
             for (; p != NULL; p = p->ai_next) {
@@ -97,10 +128,7 @@ void* do_connect(struct addrinfo *servinfo)
         if (p == NULL) {
             continue;
         }
-#if 1
         for (j=0; j<g_nhello; ++j) {
-            struct timespec t1, t2;
-            clock_gettime(CLOCK_MONOTONIC, &t1);
             for (k=0; k<g_noverwrap; ++k) {
                 sockfd = socks[k];
                 send(sockfd, "hello\n", 6, 0);
@@ -115,6 +143,15 @@ void* do_connect(struct addrinfo *servinfo)
                     printf("Recieved %d bytes\n", numbytes);
                 }
             }
+        }
+
+        for (k=0; k<g_noverwrap; ++k) {
+            close(socks[k]);
+        }
+        if (!servinfo) {
+            freeaddrinfo(pinfo);
+        }
+        {
             clock_gettime(CLOCK_MONOTONIC, &t2);
             long long t = t2.tv_sec * 1000000000LL + t2.tv_nsec;
             t          -= t1.tv_sec * 1000000000LL + t1.tv_nsec;
@@ -122,11 +159,6 @@ void* do_connect(struct addrinfo *servinfo)
             if (t > 1000000) t=1000000;
             g_restimes[t]++;
         }
-
-        for (k=0; k<g_noverwrap; ++k) {
-            close(socks[k]);
-        }
-#endif
     }
     free(socks);
     return NULL;
@@ -158,7 +190,7 @@ void show_restimes()
 
 int main(int argc, char *argv[])
 {
-    struct addrinfo hints, *servinfo, *p;
+    struct addrinfo *servinfo;
     int rv;
     int opt;
 
@@ -168,10 +200,10 @@ int main(int argc, char *argv[])
     g_nhello = 0;
     g_noverwrap = 1;
 
-    const char *port = PORT;
-    const char *host = NULL;
+    port = PORT;
+    host = NULL;
 
-    while (-1 != (opt = getopt(argc, argv, "n:h:c:p:o:v"))) {
+    while (-1 != (opt = getopt(argc, argv, "n:h:c:p:o:vg"))) {
         switch (opt) {
         case 'n':
             g_nloop = atoi(optarg);
@@ -191,6 +223,9 @@ int main(int argc, char *argv[])
         case 'v':
             verbose = 1;
             break;
+        case 'g':
+            g_resolve = 1;
+            break;
         default:
             fprintf(stderr, "Unknown option: %c\n", opt);
             return 1;
@@ -198,23 +233,21 @@ int main(int argc, char *argv[])
     }
 
     if (optind >= argc) {
-        fprintf(stderr,"usage: client [-v] [-n connect count] [-h hellos per connec] [-c threads] [-p port] hostname\n");
+        fprintf(stderr, "usage: client [-vg] [-n connect count] [-h hellos per connec] [-c threads] [-p port] hostname\n");
         return 2;
     }
+    host = argv[optind];
 
-    memset(&hints, 0, sizeof hints);
-    hints.ai_family = AF_UNSPEC;
-    hints.ai_socktype = SOCK_STREAM;
-
-    if ((rv = getaddrinfo(argv[optind], port, &hints, &servinfo)) != 0) {
-        fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(rv));
-        return 1;
+    servinfo = NULL;
+    if (!g_resolve) {
+        servinfo = getaddr();
+        if (servinfo == NULL) {
+            fprintf(stderr, "Can't resolve %s:%s\n", host, port);
+            return 3;
+        }
     }
 
-    if (nthread == 1) {
-        do_connect(servinfo);
-    }
-    else {
+    {
         void* res;
         pthread_t *threads = malloc(sizeof(pthread_t)*nthread);
         int i;
