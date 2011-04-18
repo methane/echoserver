@@ -1,5 +1,9 @@
-# An echo server using pyev.
-# copied from pyev's document.
+#!/usr/bin/env python
+
+"""
+An echo server using pyev.
+copied from pyev's document.
+"""
 
 import socket
 import signal
@@ -23,7 +27,7 @@ class Connection(object):
         self.buf = ""
         self.watcher = pyev.Io(self.sock._sock, pyev.EV_READ, loop, self.io_cb)
         self.watcher.start()
-        logging.debug("{0}: ready".format(self))
+        #logging.debug("{0}: ready".format(self))
 
     def reset(self, events):
         self.watcher.stop()
@@ -31,8 +35,8 @@ class Connection(object):
         self.watcher.start()
 
     def handle_error(self, msg, level=logging.ERROR, exc_info=True):
-        logging.log(level, "{0}: {1} --> closing".format(self, msg),
-                    exc_info=exc_info)
+        #logging.log(level, "{0}: {1} --> closing".format(self, msg),
+        #            exc_info=exc_info)
         self.close()
 
     def handle_read(self):
@@ -68,7 +72,7 @@ class Connection(object):
         self.sock.close()
         self.watcher.stop()
         self.watcher = None
-        logging.debug("{0}: closed".format(self))
+        #logging.debug("{0}: closed".format(self))
 
 
 class Server(object):
@@ -87,8 +91,8 @@ class Server(object):
         self.conns = weakref.WeakValueDictionary()
 
     def handle_error(self, msg, level=logging.ERROR, exc_info=True):
-        logging.log(level, "{0}: {1} --> stopping".format(self, msg),
-                    exc_info=exc_info)
+        #logging.log(level, "{0}: {1} --> stopping".format(self, msg),
+        #            exc_info=exc_info)
         self.stop()
 
     def signal_cb(self, watcher, revents):
@@ -113,7 +117,7 @@ class Server(object):
         self.sock.listen(socket.SOMAXCONN)
         for watcher in self.watchers:
             watcher.start()
-        logging.debug("{0}: started on {0.address}".format(self))
+        #logging.debug("{0}: started on {0.address}".format(self))
         self.loop.start()
 
     def stop(self):
@@ -123,9 +127,9 @@ class Server(object):
             self.watchers.pop().stop()
         for conn in self.conns.values():
             conn.close()
-        logging.debug("{0}: stopped".format(self))
+        #logging.debug("{0}: stopped".format(self))
 
 
 if __name__ == "__main__":
-    server = Server(("127.0.0.1", 5000))
+    server = Server(("", 5001))
     server.start()
