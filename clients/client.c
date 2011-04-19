@@ -32,6 +32,8 @@ int g_noverwrap;
 int g_resolve;
 long g_restimes[1000001];
 
+pthread_mutex_t g_mutex = PTHREAD_MUTEX_INITIALIZER;
+
 const char *host;
 const char *port;
 
@@ -93,6 +95,9 @@ void* do_connect(struct addrinfo *servinfo)
 
     socks = malloc(sizeof(int)*g_noverwrap);
     memset(socks, 0, sizeof(int)*g_noverwrap);
+
+    pthread_mutex_lock(&g_mutex);
+    pthread_mutex_unlock(&g_mutex);
 
     for (i = 0; i < g_nloop; ++i) {
         // loop through all the results and connect to the first we can
@@ -245,6 +250,7 @@ int main(int argc, char *argv[])
         }
     }
 
+    pthread_mutex_lock(&g_mutex);
     {
         void* res;
         pthread_t *threads = malloc(sizeof(pthread_t)*nthread);
@@ -256,6 +262,8 @@ int main(int argc, char *argv[])
                 return 3;
             }
         }
+        pthread_mutex_unlock(&g_mutex);
+
         for (i = 0; i < nthread; ++i) {
             rv = pthread_join(threads[i], &res);
             if (rv == -1) {
