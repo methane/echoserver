@@ -24,7 +24,13 @@
 #define NUMLOOP (1000)
 #define NUMTHREAD (1)
 
+#if !defined(BIND_SOURCE_PORT)
 #define BIND_SOURCE_PORT (0)
+#endif
+
+#if !defined(SERVER_CLOSE)
+# define SERVER_CLOSE (0)
+#endif
 
 int g_nloop;
 int g_nhello;
@@ -147,6 +153,12 @@ void* do_connect(struct addrinfo *servinfo)
                 }
             }
         }
+
+#if SERVER_CLOSE
+        do {
+            numbytes = recv(sockfd, buf, MAXDATASIZE-1, 0);
+        } while (numbytes > 0);
+#endif
 
         {
             clock_gettime(CLOCK_MONOTONIC, &t2);
