@@ -14,7 +14,7 @@
 #include <netinet/in.h>
 
 #define DEFAULT_PORT (5000)
-#define MAX_EVENTS   (64)
+#define MAX_EVENTS   (255)
 
 using namespace std;
 
