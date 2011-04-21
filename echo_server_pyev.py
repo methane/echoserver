@@ -30,26 +30,29 @@ class Connection(object):
         #logging.debug("{0}: ready".format(self))
 
     def reset(self, events):
-        self.watcher.stop()
-        self.watcher.set(self.sock, events)
-        self.watcher.start()
+        w = self.watcher
+        w.stop()
+        w.set(self.sock, events)
+        w.start()
 
     def handle_error(self, msg, level=logging.ERROR, exc_info=True):
-        #logging.log(level, "{0}: {1} --> closing".format(self, msg),
-        #            exc_info=exc_info)
+        logging.log(level, "{0}: {1} --> closing".format(self, msg),
+                    exc_info=exc_info)
         self.close()
 
     def handle_read(self):
         try:
             buf = self.sock.recv(1024)
+            if buf:
+                self.buf += buf
+                self.handle_write()
+                if buf:
+                    self.reset(pyev.EV_READ | pyev.EV_WRITE)
+            else:
+                self.handle_error("connection closed by peer", logging.DEBUG, False)
         except socket.error as err:
             if err.args[0] not in NONBLOCKING:
                 self.handle_error("error reading from {0}".format(self.sock))
-        if buf:
-            self.buf += buf
-            self.reset(pyev.EV_READ | pyev.EV_WRITE)
-        else:
-            self.handle_error("connection closed by peer", logging.DEBUG, False)
 
     def handle_write(self):
         try:
@@ -131,5 +134,5 @@ class Server(object):
 
 
 if __name__ == "__main__":
-    server = Server(("", 5001))
+    server = Server(("", 5002))
     server.start()
