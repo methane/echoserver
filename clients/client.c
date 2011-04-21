@@ -107,8 +107,6 @@ void* do_connect(struct addrinfo *servinfo)
 
     for (i = 0; i < g_nloop; ++i) {
         // loop through all the results and connect to the first we can
-        clock_gettime(CLOCK_MONOTONIC, &t1);
-
         if (servinfo) {
             pinfo = servinfo;
         } else {
@@ -138,6 +136,8 @@ void* do_connect(struct addrinfo *servinfo)
             continue;
         }
         for (j=0; j<g_nhello; ++j) {
+        clock_gettime(CLOCK_MONOTONIC, &t1);
+
             for (k=0; k<g_noverwrap; ++k) {
                 sockfd = socks[k];
                 send(sockfd, "hello\n", 6, 0);
@@ -152,14 +152,6 @@ void* do_connect(struct addrinfo *servinfo)
                     printf("Recieved %d bytes\n", numbytes);
                 }
             }
-        }
-
-#if SERVER_CLOSE
-        do {
-            numbytes = recv(sockfd, buf, MAXDATASIZE-1, 0);
-        } while (numbytes > 0);
-#endif
-
         {
             clock_gettime(CLOCK_MONOTONIC, &t2);
             long long t = t2.tv_sec * 1000000000LL + t2.tv_nsec;
@@ -168,6 +160,14 @@ void* do_connect(struct addrinfo *servinfo)
             if (t > 1000000) t=1000000;
             g_restimes[t]++;
         }
+        }
+
+#if SERVER_CLOSE
+        do {
+            numbytes = recv(sockfd, buf, MAXDATASIZE-1, 0);
+        } while (numbytes > 0);
+#endif
+
         for (k=0; k<g_noverwrap; ++k) {
             close(socks[k]);
         }
