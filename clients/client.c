@@ -146,7 +146,8 @@ void* do_connect(struct addrinfo *servinfo)
                 sockfd = socks[k];
                 if ((numbytes = recv(sockfd, buf, MAXDATASIZE-1, 0)) < 0) {
                     perror("recv");
-                    exit(1);
+                    close(sockfd);
+                    goto exit;
                 }
                 if (numbytes != 6) {
                     printf("Recieved %d bytes\n", numbytes);
@@ -156,7 +157,7 @@ void* do_connect(struct addrinfo *servinfo)
             clock_gettime(CLOCK_MONOTONIC, &t2);
             long long t = t2.tv_sec * 1000000000LL + t2.tv_nsec;
             t          -= t1.tv_sec * 1000000000LL + t1.tv_nsec;
-            t /= 1000; // ns => us
+            t /= 10000; // ns => 10us
             if (t > 1000000) t=1000000;
             g_restimes[t]++;
         }
@@ -175,6 +176,7 @@ void* do_connect(struct addrinfo *servinfo)
             freeaddrinfo(pinfo);
         }
     }
+exit:
     free(socks);
     return NULL;
 }
@@ -184,10 +186,12 @@ void show_restime_res(int start, int stop, int step)
     for (int i = start; i < stop; i += step) {
         long sum = 0;
         for (int j = 0; j < step; ++j) sum += g_restimes[i+j];
-        if (start < 1000) {
-            printf(" <%5d [us]: %d\n", i+step, sum);
-        } else {
-            printf(" <%5d [ms]: %d\n", (i+step)/1000, sum);
+        if (sum > 0) {
+            if (start < 99) {
+                printf(" <%5d [us]: %d\n", (i+step)*10, sum);
+            } else {
+                printf(" <%5d [ms]: %d\n", (i+step)/100, sum);
+            }
         }
     }
 }
@@ -200,7 +204,7 @@ void show_restimes()
     show_restime_res(1000, 10000, 1000);
     show_restime_res(10000, 100000, 10000);
     show_restime_res(100000, 1000000, 100000);
-    printf(" >= 1sec: %d\n", g_restimes[1000000]);
+    printf(" >= 10sec: %d\n", g_restimes[1000000]);
 }
 
 int main(int argc, char *argv[])
