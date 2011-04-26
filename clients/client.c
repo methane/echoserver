@@ -21,11 +21,8 @@
 
 #define MAXDATASIZE (100) // max number of bytes we can get at once 
 
-#define NUMLOOP (1000)
-#define NUMTHREAD (1)
-
 #if !defined(BIND_SOURCE_PORT)
-#define BIND_SOURCE_PORT (0)
+# define BIND_SOURCE_PORT (0)
 #endif
 
 #if !defined(SERVER_CLOSE)
@@ -214,9 +211,9 @@ int main(int argc, char *argv[])
     int opt;
 
     int verbose = 0;
-    int nthread = NUMTHREAD;
-    g_nloop = NUMLOOP;
-    g_nhello = 0;
+    int nthread = 1;
+    g_nloop = 1;
+    g_nhello = 100;
     g_noverwrap = 1;
 
     port = PORT;
@@ -267,7 +264,9 @@ int main(int argc, char *argv[])
     }
 
     pthread_mutex_lock(&g_mutex);
+    long long time_consumed;
     {
+        struct timespec t1, t2;
         void* res;
         pthread_t *threads = malloc(sizeof(pthread_t)*nthread);
         int i;
@@ -278,6 +277,7 @@ int main(int argc, char *argv[])
                 return 3;
             }
         }
+        clock_gettime(CLOCK_MONOTONIC, &t1);
         pthread_mutex_unlock(&g_mutex);
 
         for (i = 0; i < nthread; ++i) {
@@ -287,12 +287,22 @@ int main(int argc, char *argv[])
                 return 4;
             }
         }
+        clock_gettime(CLOCK_MONOTONIC, &t2);
+        time_consumed  = t2.tv_sec * 1000000000LL + t2.tv_nsec;
+        time_consumed -= t1.tv_sec * 1000000000LL + t1.tv_nsec;
         free(threads);
     }
 
     freeaddrinfo(servinfo); // all done with this structure
     if (verbose)
         show_restimes();
+
+    {
+        printf("Throughput: %.2lf [#/sec]\n",
+                (g_nloop*g_nhello*g_noverwrap*nthread)*1000000000.0/(time_consumed));
+        printf("Average response time: %lf [ms]\n", 
+                (time_consumed/1000.0)/(g_nloop*g_nhello*g_noverwrap*nthread));
+    }
 
     return 0;
 }
