@@ -297,12 +297,8 @@ int main(int argc, char *argv[])
     if (verbose)
         show_restimes();
 
-    {
-        printf("Throughput: %.2lf [#/sec]\n",
-                (g_nloop*g_nhello*g_noverwrap*nthread)*1000000000.0/(time_consumed));
-        printf("Average response time: %lf [ms]\n", 
-                (time_consumed/1000.0)/(g_nloop*g_nhello*g_noverwrap*nthread));
-    }
+    printf("Throughput: %.2lf [#/sec]\n",
+            (g_nloop*g_nhello*g_noverwrap*nthread)*1000000000.0/(time_consumed));
 
     return 0;
 }
