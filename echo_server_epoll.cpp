@@ -14,7 +14,7 @@
 #include <netinet/in.h>
 
 #define DEFAULT_PORT (5000)
-#define MAX_EVENTS   (255)
+#define MAX_EVENTS   (1000)
 
 using namespace std;
 
@@ -127,7 +127,7 @@ static int setup_server_socket(int port)
         exit(-1);
     }
 
-    if (listen(sock, 5) < 0) {
+    if (listen(sock, 128) < 0) {
         close(sock);
         perror("listen");
         exit(-1);
