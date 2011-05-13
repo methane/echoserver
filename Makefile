@@ -8,6 +8,9 @@ echo_server_epoll: echo_server_epoll.cpp
 echo_server_thread: echo_server_thread.cpp
 	$(CXX) $(CXXFLAGS) -o $@ $<
 
+echo_server_libev: echo_server_libev.cpp
+	$(CXX) $(CXXFLAGS) -o $@ $< -lev
+
 null_server_epoll: null_server_epoll.cpp
 	$(CXX) $(CXXFLAGS) -o $@ $<
 
