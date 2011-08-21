@@ -1,12 +1,15 @@
+#!/usr/bin/env python
 from gevent.server import StreamServer
 
 def handler(sock, addr):
     try:
+        recv=sock.recv
+        send=sock.send
         while 1:
-            buf = sock.recv(4096)
+            buf = recv(4096)
             if not buf:
                 return
-            sock.send(buf)
+            send(buf)
     finally:
         sock.close()
 
