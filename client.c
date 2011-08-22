@@ -152,7 +152,7 @@ void* do_connect(struct addrinfo *servinfo)
                     printf("Recieved %d bytes\n", numbytes);
                     goto exit;
                 }
-                success += 1;
+                __sync_fetch_and_add(&success, 1);
             }
         {
             clock_gettime(CLOCK_MONOTONIC, &t2);
@@ -189,9 +189,9 @@ void show_restime_res(int start, int stop, int step)
         for (int j = 0; j < step; ++j) sum += g_restimes[i+j];
         if (sum > 0) {
             if (start < 99) {
-                printf(" <%5d [us]: %d\n", (i+step)*10, sum);
+                printf(" <%5d [us]: %ld\n", (i+step)*10, sum);
             } else {
-                printf(" <%5d [ms]: %d\n", (i+step)/100, sum);
+                printf(" <%5d [ms]: %ld\n", (i+step)/100, sum);
             }
         }
     }
@@ -205,7 +205,7 @@ void show_restimes()
     show_restime_res(1000, 10000, 1000);
     show_restime_res(10000, 100000, 10000);
     show_restime_res(100000, 1000000, 100000);
-    printf(" >= 10sec: %d\n", g_restimes[1000000]);
+    printf(" >= 10sec: %ld\n", g_restimes[1000000]);
 }
 
 int main(int argc, char *argv[])
