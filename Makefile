@@ -20,3 +20,6 @@ null_server_thread: null_server_thread.cpp
 echo_server_go: echo_server_go.go
 	6g -o echo_server_go.6 $<
 	6l -o $@ echo_server_go.6
+
+client: client.c
+	$(CC) $(CFLAGS) $< -o $@
