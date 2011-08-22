@@ -34,6 +34,7 @@ int g_nloop;
 int g_nhello;
 int g_noverwrap;
 int g_resolve;
+int success;
 long g_restimes[1000001];
 
 pthread_mutex_t g_mutex = PTHREAD_MUTEX_INITIALIZER;
@@ -102,7 +103,7 @@ void* do_connect(struct addrinfo *servinfo)
 
     pthread_mutex_lock(&g_mutex);
     pthread_mutex_unlock(&g_mutex);
-
+    success = 0;
     for (i = 0; i < g_nloop; ++i) {
         // loop through all the results and connect to the first we can
         if (servinfo) {
@@ -149,7 +150,9 @@ void* do_connect(struct addrinfo *servinfo)
                 }
                 if (numbytes != 6) {
                     printf("Recieved %d bytes\n", numbytes);
+                    goto exit;
                 }
+                success += 1;
             }
         {
             clock_gettime(CLOCK_MONOTONIC, &t2);
@@ -299,7 +302,7 @@ int main(int argc, char *argv[])
         show_restimes();
 
     printf("Throughput: %.2lf [#/sec]\n",
-            (g_nloop*g_nhello*g_noverwrap*nthread)*1000000000.0/(time_consumed));
+            (success)*1000000000.0/(time_consumed));
 
     return 0;
 }
