@@ -4,8 +4,8 @@
 # See LICENSE for details.
 
 from twisted.internet.protocol import Protocol, Factory
-from twisted.internet import epollreactor
-epollreactor.install()
+#from twisted.internet import epollreactor
+#epollreactor.install()
 from twisted.internet import reactor
 
 ### Protocol Implementation
