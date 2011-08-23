@@ -1,5 +1,6 @@
 module Main where
-import Network.Socket
+import Network.Socket hiding (send, sendTo, recv, recvFrom)
+import Network.Socket.ByteString
 import System.IO
 import Control.Exception
 import Control.Concurrent
@@ -22,7 +23,7 @@ acceptLoop soc = do
 
 echoLoop soc = do
   sequence_ (repeat (do { -- ioアクションの無限リスト
-                          (buff,_,_) <- recvFrom soc 4096;
+                          (buff,_) <- recvFrom soc 4096;
                           send soc buff
                      }))
   `catch` (\(SomeException e) -> return ())
