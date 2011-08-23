@@ -22,5 +22,8 @@ echo_server_go: echo_server_go.go
 	6g -o echo_server_go.6 $<
 	6l -o $@ echo_server_go.6
 
+echo_server_haskell: echo_server_haskell.hs
+	ghc6 -threaded -O --make -o $@ $<
+
 client: client.c
 	$(CC) $(CFLAGS) $< -o $@
