@@ -392,8 +392,7 @@ ghc6
     >= 10sec: 1
    Throughput: 61588.47 [#/sec]
 
-ghc7.2.1
-^^^^^^^^^^^
+threaded version
 
 ::
 
