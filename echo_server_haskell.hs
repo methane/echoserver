@@ -18,7 +18,7 @@ main = withSocketsDo $ do
 
 acceptLoop soc = do
   (nsoc, addr) <- accept soc
-  forkOS $ echoLoop nsoc
+  forkIO $ echoLoop nsoc
   acceptLoop soc
 
 echoLoop soc = do
