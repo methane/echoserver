@@ -12,7 +12,6 @@ main = withSocketsDo $ do
          let sockaddr = SockAddrInet port addr
          bindSocket soc sockaddr
          listen soc 1024
-         -- mainスレッドではいくつかのシグナルをブロック
          putStrLn $ "start server, listening on: " ++ show port
          acceptLoop soc `finally` sClose soc
 
@@ -22,7 +21,6 @@ acceptLoop soc = do
   acceptLoop soc
 
 echoLoop soc = do
-  --メインスレッドで無視してたシグナルをunblock
   sequence_ (repeat (do { -- ioアクションの無限リスト
                           (buff,_,_) <- recvFrom soc 4096;
                           send soc buff
