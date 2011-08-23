@@ -334,6 +334,9 @@ Python 2.7.2 + gevent
 Haskell
 ---------
 
+ghc6
+^^^^^^
+
 ::
 
    inada-n@sag14:~/work/echo$ ./client -v -n1 -h10000 -c100 -p5000 sag15
@@ -389,3 +392,41 @@ Haskell
     >= 10sec: 1
    Throughput: 61588.47 [#/sec]
 
+ghc7.2.1
+^^^^^^^^^^^
+
+::
+
+   #server
+   inada-n@sag15:~/work/echo$ ./echo_server_haskell +RTS -N2
+
+   #client
+   inada-n@sag14:~/work/echo$ ./client -v -n1 -h10000 -c100 -p5000 sag15
+    <   80 [us]: 3
+    <   90 [us]: 48
+    <  100 [us]: 186
+    <  200 [us]: 12464
+    <  300 [us]: 19471
+    <  400 [us]: 25320
+    <  500 [us]: 29856
+    <  600 [us]: 45490
+    <  700 [us]: 70513
+    <  800 [us]: 80268
+    <  900 [us]: 82132
+    < 1000 [us]: 82599
+    <    2 [ms]: 533600
+    <    3 [ms]: 6274
+    <    4 [ms]: 2298
+    <    5 [ms]: 1975
+    <    6 [ms]: 1766
+    <    7 [ms]: 1139
+    <    8 [ms]: 163
+    <    9 [ms]: 393
+    <   10 [ms]: 413
+    <   20 [ms]: 3135
+    <   30 [ms]: 494
+    >= 10sec: 0
+   Throughput: 80152.74 [#/sec]
+
+..
+   vim: paste
