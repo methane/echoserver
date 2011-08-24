@@ -1,7 +1,7 @@
-CXXFLAGS=-O2 -g -Wall -pthread
-CFLAGS = -O2 -pthread -lrt --std=gnu99
+CXXFLAGS=-O2 -g -Wall -pthread -lrt
+CFLAGS = -O2 -g -Wall -pthread -lrt --std=gnu99
 
-all: echo_server_epoll echo_server_thread
+all: echo_server_epoll echo_server_thread client
 
 echo_server_epoll: echo_server_epoll.cpp
 	$(CXX) $(CXXFLAGS) -o $@ $<
