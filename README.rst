@@ -1,5 +1,5 @@
-いろんな言語で Echo Server
-===============================
+Echo servers in some languages
+=================================
 
 いろんな言語＋フレームワークで echo server を書いてみました。
 
@@ -9,423 +9,246 @@ epoll, thread 版は自分で作成したものです。
 各 echo server の実装は全く同じものではないのであくまでも参考ですが、
 パフォーマンスはこんなかんじです。
 
-epoll
+test environment
+-----------------
+
+client and server are connected by Gigabit Ethernet.
+
+client (sag14)
+^^^^^^^^^^^^^^^
+Debian 5.0.4 (i386)
+Linux sag14 2.6.26.5 #2 SMP Mon Sep 29 14:17:40 JST 2008 i686 GNU/Linux
+Intel(R) Core(TM)2 CPU          6300  @ 1.86GHz (dual)
+
+server (sag15)
+^^^^^^^^^^^^^^^
+Debian 6.0.2 (amd64)
+Linux sag15 2.6.32-5-amd64 #1 SMP Mon Mar 7 21:35:22 UTC 2011 x86_64 GNU/Linux
+Intel(R) Core(TM)2 CPU          6300  @ 1.86GHz (dual)
+
+test command
+-------------
+
+bench.sh does kick client 3 times with following option.
+
+::
+
+   ./client -c50 -o2 -h10000 sag15
+
+C++ epoll
 ---------
 
-::
+server::
 
-   inada-n@sag14:~/work/echo$ ./client -v -n1 -h10000 -c100 -p5000 sag15
-    <  100 [us]: 2
-    <  200 [us]: 413
-    <  300 [us]: 578
-    <  400 [us]: 772
-    <  500 [us]: 955
-    <  600 [us]: 1807
-    <  700 [us]: 77982
-    <  800 [us]: 892918
-    <  900 [us]: 22220
-    < 1000 [us]: 1564
-    <    2 [ms]: 605
-    <    3 [ms]: 3
-    <    4 [ms]: 7
-    <    5 [ms]: 5
-    <    6 [ms]: 4
-    <    7 [ms]: 4
-    <    8 [ms]: 4
-    <    9 [ms]: 3
-    <   10 [ms]: 3
-    <   20 [ms]: 23
-    <   30 [ms]: 15
-    >= 10sec: 0
-   Throughput: 119333.23 [#/sec]
+   ./echo_server_epoll
 
-thread
--------
+result::
 
-./echo_server_thread -c 200 で200スレッド実行しました.
+   Throughput: 117036.86 [#/sec]
+   Throughput: 118702.63 [#/sec]
+   Throughput: 119129.38 [#/sec]
 
-::
+with forking.
 
-   inada-n@sag14:~/work/echo$ ./client -v -n1 -h10000 -c100 -p5000 sag15
-    <   80 [us]: 169
-    <   90 [us]: 2601
-    <  100 [us]: 9080
-    <  200 [us]: 116827
-    <  300 [us]: 129216
-    <  400 [us]: 387277
-    <  500 [us]: 158722
-    <  600 [us]: 33604
-    <  700 [us]: 12044
-    <  800 [us]: 6309
-    <  900 [us]: 4267
-    < 1000 [us]: 3644
-    <    2 [ms]: 110190
-    <    3 [ms]: 23142
-    <    4 [ms]: 2030
-    <    5 [ms]: 380
-    <    6 [ms]: 187
-    <    7 [ms]: 38
-    <    8 [ms]: 20
-    <    9 [ms]: 15
-    <   10 [ms]: 27
-    <   20 [ms]: 84
-    <   30 [ms]: 3
-    <   40 [ms]: 12
-    <   50 [ms]: 1
-    <   60 [ms]: 33
-    <   70 [ms]: 1
-    <  300 [ms]: 14
-    >= 10sec: 0
-   Throughput: 112159.63 [#/sec]
+server::
+
+   ./echo_server_epoll -f2
+
+result::
+
+   Throughput: 146602.29 [#/sec]
+   Throughput: 132542.38 [#/sec]
+   Throughput: 149737.19 [#/sec]
+
+
+C++ thread
+-----------
+
+server::
+
+   ./echo_server_thread -c120
+
+result::
+
+   Throughput: 122903.04 [#/sec]
+   Throughput: 121306.08 [#/sec]
+   Throughput: 122511.62 [#/sec]
+
+
+Haskell
+----------
+
+GHC 7.0.3
+
+server::
+
+   ./echo_server_haskell
+
+result::
+
+   Throughput: 80391.53 [#/sec]
+   Throughput: 82943.94 [#/sec]
+   Throughput: 76325.74 [#/sec]
 
 
 Erlang
 -------------
 
-起動方法
+server::
 
-::
-
+   $ erl
+   Erlang R14A (erts-5.8) [source] [64-bit] [smp:2:2] [rq:2] [async-threads:0] [hipe] [kernel-poll:false]
+   Eshell V5.8  (abort with ^G)
    1> c(echo_server_erlang, [native, {hipe, ['O3']}]).
    {ok,echo_server_erlang}
    2> echo_server_erlang:listen(5000).
 
-::
+result::
 
-   inada-n@sag14:~/work/echo$ ./client -v -n1 -h10000 -c100 -p5000 sag15
-    <  100 [us]: 4
-    <  200 [us]: 20292
-    <  300 [us]: 199754
-    <  400 [us]: 284180
-    <  500 [us]: 207507
-    <  600 [us]: 82588
-    <  700 [us]: 132641
-    <  800 [us]: 48348
-    <  900 [us]: 15588
-    < 1000 [us]: 1345
-    <    2 [ms]: 7567
-    <    3 [ms]: 41
-    <    5 [ms]: 15
-    <    6 [ms]: 17
-    <  300 [ms]: 35
-    <  700 [ms]: 20
-    >= 10sec: 0
-   Throughput: 19201.76 [#/sec]
+   Throughput: 61698.85 [#/sec]
+   Throughput: 73994.04 [#/sec]
+   Throughput: 72668.51 [#/sec]
+
 
 Go (r59)
 -------------
 
-::
+server::
 
-   inada-n@sag14:~/work/echo$ ./client -v -n1 -h10000 -c100 -p5000 sag15
-    <  200 [us]: 47
-    <  300 [us]: 137
-    <  400 [us]: 271
-    <  500 [us]: 778
-    <  600 [us]: 873
-    <  700 [us]: 1120
-    <  800 [us]: 1151
-    <  900 [us]: 1315
-    < 1000 [us]: 1268
-    <    2 [ms]: 988115
-    <    3 [ms]: 3150
-    <    4 [ms]: 294
-    <    5 [ms]: 79
-    <    6 [ms]: 704
-    <    7 [ms]: 431
-    <    8 [ms]: 5
-    <    9 [ms]: 1
-    <   10 [ms]: 1
-    <   20 [ms]: 8
-    <   30 [ms]: 7
-    <   40 [ms]: 5
-    <   50 [ms]: 5
-    <   60 [ms]: 5
-    <   70 [ms]: 4
-    <   80 [ms]: 3
-    <   90 [ms]: 4
-    <  100 [ms]: 3
-    <  200 [ms]: 27
-    <  300 [ms]: 6
-    >= 10sec: 0
-   Throughput: 52633.50 [#/sec]
+   $ ./echo_server_go
+
+result::
+
+   Throughput: 43505.17 [#/sec]
+   Throughput: 43346.11 [#/sec]
+   Throughput: 43198.26 [#/sec]
+
+server::
+
+   $ GOMAXPROCS=3 ./echo_server_go
+
+result::
+
+   Throughput: 52087.16 [#/sec]
+   Throughput: 52070.02 [#/sec]
+   Throughput: 52068.27 [#/sec]
+
+
+pypy 1.6 + Tornado
+---------------------
+
+server::
+
+   ~/pypy-1.6/bin/pypy echo_server_tornado.py 
+
+result::
+
+   Throughput: 79193.30 [#/sec]
+   Throughput: 81063.83 [#/sec]
+   Throughput: 81442.70 [#/sec]
 
 
 pypy 1.6 + twisted
----------------------
-
-::
-
-   inada-n@sag14:~/work/echo$ ./client -v -n1 -h10000 -c100 -p5000 sag15
-    <  200 [us]: 484
-    <  300 [us]: 921
-    <  400 [us]: 1890
-    <  500 [us]: 1771
-    <  600 [us]: 13051
-    <  700 [us]: 24606
-    <  800 [us]: 12248
-    <  900 [us]: 16201
-    < 1000 [us]: 15060
-    <    2 [ms]: 602702
-    <    3 [ms]: 309254
-    <    4 [ms]: 723
-    <    5 [ms]: 97
-    <    6 [ms]: 10
-    <    7 [ms]: 21
-    <    8 [ms]: 18
-    <    9 [ms]: 1
-    <   20 [ms]: 1
-    <   30 [ms]: 667
-    <   60 [ms]: 9
-    <   70 [ms]: 43
-    <  300 [ms]: 12
-    >= 10sec: 0
-   Throughput: 46219.51 [#/sec]
-
-pypy 1.6 + Tornado
 -------------------
 
-::
+server::
 
-   inada-n@sag14:~/work/echo$ ./client -v -n1 -h10000 -c100 -p5000 sag15
-    <  100 [us]: 17
-    <  200 [us]: 7330
-    <  300 [us]: 13575
-    <  400 [us]: 9814
-    <  500 [us]: 34052
-    <  600 [us]: 20180
-    <  700 [us]: 48269
-    <  800 [us]: 20675
-    <  900 [us]: 6581
-    < 1000 [us]: 154625
-    <    2 [ms]: 662987
-    <    3 [ms]: 21141
-    <    4 [ms]: 8
-    <    5 [ms]: 47
-    <    6 [ms]: 54
-    <   10 [ms]: 203
-    <   20 [ms]: 159
-    <   30 [ms]: 38
-    >= 10sec: 0
-   Throughput: 80297.73 [#/sec]
+   ~/pypy-1.6/bin/pypy echo_server_twisted.py 
+
+result::
+
+   Throughput: 37630.81 [#/sec]
+   Throughput: 49274.60 [#/sec]
+   Throughput: 41053.66 [#/sec]
 
 
 node.js  0.5.4
 ---------------
 
-::
+server::
 
-   inada-n@sag14:~/work/echo$ ./client -v -n1 -h10000 -c100 -p5000 sag15
-    <  900 [us]: 1
-    <    2 [ms]: 49
-    <    3 [ms]: 989816
-    <    4 [ms]: 1707
-    <    5 [ms]: 721
-    <    6 [ms]: 236
-    <    7 [ms]: 555
-    <    8 [ms]: 49
-    <    9 [ms]: 2219
-    <   10 [ms]: 28
-    <   20 [ms]: 4613
-    >= 10sec: 0
-   Throughput: 36713.41 [#/sec]
+   ~/local/node-0.5.4/bin/node echo_server_nodejs.js
+
+
+result::
+
+   Throughput: 34713.88 [#/sec]
+   Throughput: 35965.09 [#/sec]
+   Throughput: 36288.78 [#/sec]
+
 
 
 Ruby 1.9.1 + EventMachine 0.12.10
 -----------------------------------
-::
 
-   inada-n@sag14:~/work/echo$ ./client -v -n1 -h10000 -c100 -p5000 sag15
-    <  200 [us]: 9643
-    <  300 [us]: 28031
-    <  400 [us]: 11453
-    <  500 [us]: 4198
-    <  600 [us]: 1774
-    <  700 [us]: 1050
-    <  800 [us]: 1266
-    <  900 [us]: 4919
-    < 1000 [us]: 25455
-    <    2 [ms]: 907098
-    <    3 [ms]: 363
-    <    4 [ms]: 4210
-    <    5 [ms]: 341
-    <    6 [ms]: 20
-    >= 10sec: 0
-   Throughput: 73744.83 [#/sec]
+server::
+
+   $ ruby1.9.1 echo_server_em.rb
+
+result::
+
+   Throughput: 74124.61 [#/sec]
+   Throughput: 73578.20 [#/sec]
+   Throughput: 75241.61 [#/sec]
+
 
 
 Ruby 1.9.1 + rev 0.3.2
 -------------------------
 
-::
+server::
 
-   inada-n@sag14:~/work/echo$ ./client -v -n1 -h10000 -c100 -p5000 sag15
-    <  200 [us]: 3
-    <  300 [us]: 8
-    <  400 [us]: 38
-    <  500 [us]: 53
-    <  600 [us]: 65
-    <  700 [us]: 88
-    <  800 [us]: 106
-    <  900 [us]: 109
-    < 1000 [us]: 90
-    <    2 [ms]: 2059
-    <    3 [ms]: 768339
-    <    4 [ms]: 138
-    <    5 [ms]: 1036
-    <    6 [ms]: 227434
-    <    7 [ms]: 7
-    <    9 [ms]: 1
-    <   10 [ms]: 3
-    <   20 [ms]: 16
-    <   30 [ms]: 11
-    <   40 [ms]: 8
-    <   50 [ms]: 8
-    <   60 [ms]: 8
-    <   70 [ms]: 7
-    <   80 [ms]: 2
-    >= 10sec: 0
-   Throughput: 32127.56 [#/sec]
+   $ ruby1.9.1 echo_server_rev.rb
+
+result::
+
+   Throughput: 32372.56 [#/sec]
+   Throughput: 32647.37 [#/sec]
+   Throughput: 32517.97 [#/sec]
 
 
 
 Python 2.7.2 + Tornado
 -------------------------
 
-::
+server::
 
-   inada-n@sag14:~/work/echo$ ./client -v -n1 -h10000 -c100 -p5000 sag15
-    <  200 [us]: 21
-    <  300 [us]: 58
-    <  400 [us]: 92
-    <  500 [us]: 103
-    <  600 [us]: 144
-    <  700 [us]: 61
-    <  800 [us]: 135
-    <  900 [us]: 105
-    < 1000 [us]: 127
-    <    2 [ms]: 957479
-    <    3 [ms]: 328
-    <    4 [ms]: 41099
-    <    5 [ms]: 52
-    <    6 [ms]: 38
-    >= 10sec: 0
-   Throughput: 51921.11 [#/sec]
+   ~/python2.7/bin/python echo_server_tornado.py
+
+result::
+
+   Throughput: 59626.30 [#/sec]
+   Throughput: 50793.45 [#/sec]
+   Throughput: 51566.35 [#/sec]
 
 
 Python 2.7.2 + gevent
 ----------------------
 
-::
+server::
 
-   inada-n@sag14:~/work/echo$ ./client -v -n1 -h10000 -c100 -p5000 sag15
-    <    4 [ms]: 2
-    <    5 [ms]: 19
-    <    6 [ms]: 999478
-    <    7 [ms]: 422
-    <    8 [ms]: 25
-    <    9 [ms]: 23
-    <   10 [ms]: 14
-    <   20 [ms]: 17
-    >= 10sec: 0
-   Throughput: 17557.47 [#/sec]
+   ~/python2.7/bin/python echo_server_gevent.py
+
+result::
+
+   Throughput: 17751.24 [#/sec]
+   Throughput: 17607.05 [#/sec]
+   Throughput: 17537.34 [#/sec]
 
 
-Haskell
----------
+Python 2.7.2 + Twisted
+----------------------
 
-ghc6
-^^^^^^
+server::
 
-::
+   ~/python2.7/bin/python echo_server_twidted.py
 
-   inada-n@sag14:~/work/echo$ ./client -v -n1 -h10000 -c100 -p5000 sag15
-    <   70 [us]: 2
-    <   80 [us]: 22
-    <   90 [us]: 630
-    <  100 [us]: 3325
-    <  200 [us]: 779663
-    <  300 [us]: 134374
-    <  400 [us]: 40228
-    <  500 [us]: 12835
-    <  600 [us]: 5998
-    <  700 [us]: 3790
-    <  800 [us]: 2495
-    <  900 [us]: 1986
-    < 1000 [us]: 2453
-    <    2 [ms]: 9142
-    <    3 [ms]: 987
-    <    4 [ms]: 325
-    <    5 [ms]: 146
-    <    6 [ms]: 54
-    <    7 [ms]: 36
-    <    8 [ms]: 66
-    <    9 [ms]: 149
-    <   10 [ms]: 58
-    <   20 [ms]: 249
-    <   30 [ms]: 62
-    <   40 [ms]: 47
-    <   50 [ms]: 35
-    <   60 [ms]: 24
-    <   70 [ms]: 24
-    <   80 [ms]: 12
-    <   90 [ms]: 11
-    <  100 [ms]: 11
-    <  200 [ms]: 70
-    <  300 [ms]: 50
-    <  400 [ms]: 51
-    <  500 [ms]: 31
-    <  600 [ms]: 82
-    <  700 [ms]: 171
-    <  800 [ms]: 152
-    <  900 [ms]: 84
-    < 1000 [ms]: 2
-    < 2000 [ms]: 15
-    < 3000 [ms]: 2
-    < 4000 [ms]: 6
-    < 5000 [ms]: 8
-    < 6000 [ms]: 8
-    < 7000 [ms]: 5
-    < 8000 [ms]: 8
-    < 9000 [ms]: 6
-    <10000 [ms]: 9
-    >= 10sec: 1
-   Throughput: 61588.47 [#/sec]
+result::
 
-threaded version
+   Throughput: 14339.96 [#/sec]
+   Throughput: 13982.39 [#/sec]
+   Throughput: 13841.22 [#/sec]
 
-::
-
-   #server
-   inada-n@sag15:~/work/echo$ ./echo_server_haskell +RTS -N2
-
-   #client
-   inada-n@sag14:~/work/echo$ ./client -v -n1 -h10000 -c100 -p5000 sag15
-    <   80 [us]: 3
-    <   90 [us]: 48
-    <  100 [us]: 186
-    <  200 [us]: 12464
-    <  300 [us]: 19471
-    <  400 [us]: 25320
-    <  500 [us]: 29856
-    <  600 [us]: 45490
-    <  700 [us]: 70513
-    <  800 [us]: 80268
-    <  900 [us]: 82132
-    < 1000 [us]: 82599
-    <    2 [ms]: 533600
-    <    3 [ms]: 6274
-    <    4 [ms]: 2298
-    <    5 [ms]: 1975
-    <    6 [ms]: 1766
-    <    7 [ms]: 1139
-    <    8 [ms]: 163
-    <    9 [ms]: 393
-    <   10 [ms]: 413
-    <   20 [ms]: 3135
-    <   30 [ms]: 494
-    >= 10sec: 0
-   Throughput: 80152.74 [#/sec]
 
 ..
-   vim: paste
+   vim: paste sw=3 expandtabs
