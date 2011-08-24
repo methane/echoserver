@@ -25,5 +25,8 @@ echo_server_go: echo_server_go.go
 echo_server_haskell: echo_server_haskell.hs
 	ghc6 -threaded -O --make -o $@ $<
 
+echo_server_erlang: echo_server_erlang.erl
+	erlc $<
+
 client: client.c
 	$(CC) $(CFLAGS) $< -o $@
