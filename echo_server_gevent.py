@@ -14,7 +14,7 @@ def handler(sock, addr):
         sock.close()
 
 def main():
-    server = StreamServer(('', 5000), handler)
+    server = StreamServer(('', 5000), handler, backlog=1024)
     server.serve_forever()
 
 if __name__ == '__main__':

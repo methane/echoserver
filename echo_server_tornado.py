@@ -90,7 +90,7 @@ if __name__ == '__main__':
     sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     sock.setblocking(0)
     sock.bind(("", 5000))
-    sock.listen(128)
+    sock.listen(1024)
 
     io_loop = ioloop.IOLoop.instance()
     callback = functools.partial(connection_ready, sock)

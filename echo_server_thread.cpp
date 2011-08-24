@@ -45,7 +45,7 @@ static int setup_server_socket(int port, bool block=false)
         exit(-1);
     }
 
-    if (listen(sock, 5) < 0) {
+    if (listen(sock, 1024) < 0) {
         close(sock);
         perror("listen");
         exit(-1);

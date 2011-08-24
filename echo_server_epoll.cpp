@@ -127,7 +127,7 @@ static int setup_server_socket(int port)
         exit(-1);
     }
 
-    if (listen(sock, 128) < 0) {
+    if (listen(sock, 1024) < 0) {
         close(sock);
         perror("listen");
         exit(-1);

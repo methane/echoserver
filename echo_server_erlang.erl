@@ -13,7 +13,7 @@
 -define(TCP_OPTIONS,[list, 
 		     {packet, 0}, 
 		     {active, false}, 
-		     {backlog, 100}, % speeding up (default is 5)
+		     {backlog, 1024}, % speeding up (default is 5)
 		     {reuseaddr, true}]).
 
 %% Listen on the given port, accept the first incoming connection and

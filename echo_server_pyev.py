@@ -117,7 +117,7 @@ class Server(object):
             self.handle_error("error accepting a connection")
 
     def start(self):
-        self.sock.listen(socket.SOMAXCONN)
+        self.sock.listen(1024)
         for watcher in self.watchers:
             watcher.start()
         #logging.debug("{0}: started on {0.address}".format(self))

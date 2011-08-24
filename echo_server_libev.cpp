@@ -14,7 +14,7 @@
 #include <ev.h>
 
 #define ECHO_PORT 5000
-#define MAX_BACKLOG 128
+#define MAX_BACKLOG 1024
 #define RCVBUFSIZE 256
 #define MAX_EVENTS 1024
 
