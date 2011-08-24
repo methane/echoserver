@@ -141,13 +141,17 @@ int main(int argc, char *argv[])
     struct epoll_event ev;
     struct epoll_event events[MAX_EVENTS];
     int listener, epfd;
+    int procs=1;
 
     int opt, port=DEFAULT_PORT;
 
-    while (-1 != (opt = getopt(argc, argv, "p:"))) {
+    while (-1 != (opt = getopt(argc, argv, "p:f:"))) {
         switch (opt) {
         case 'p':
             port = atoi(optarg);
+            break;
+        case 'f':
+            procs = atoi(optarg);
             break;
         default:
             fprintf(stderr, "Unknown option: %c\n", opt);
@@ -155,12 +159,15 @@ int main(int argc, char *argv[])
         }
     }
 
+    listener = setup_server_socket(port);
+
+    for (int i=1; i<procs; ++i)
+        fork();
+
     if ((epfd = epoll_create(128)) < 0) {
         perror("epoll_create");
         exit(-1);
     }
-
-    listener = setup_server_socket(port);
 
     memset(&ev, 0, sizeof ev);
     ev.events = EPOLLIN;
