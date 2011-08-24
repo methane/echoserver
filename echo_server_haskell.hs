@@ -1,30 +1,31 @@
 module Main where
-import Network.Socket hiding (send, sendTo, recv, recvFrom)
-import Network.Socket.ByteString
-import System.IO
-import Control.Exception
-import Control.Concurrent
+
+import Control.Concurrent (forkIO)
+import Control.Exception (onException)
+import qualified Data.ByteString as BS (length)
+import Network (withSocketsDo, listenOn, PortID(..))
+import Network.Socket (Socket, sClose, accept)
+import Network.Socket.ByteString (recv, send)
 import Prelude hiding (catch)
 
+main :: IO ()
 main = withSocketsDo $ do
-         let port = fromIntegral 5000
-         soc <- socket AF_INET Stream 0
-         addr <- inet_addr "0.0.0.0"
-         let sockaddr = SockAddrInet port addr
-         bindSocket soc sockaddr
-         listen soc 1024
-         putStrLn $ "start server, listening on: " ++ show port
-         acceptLoop soc `finally` sClose soc
+    let port = 5000
+    soc <- listenOn $ PortNumber port
+    putStrLn $ "start server, listening on: " ++ show port
+    acceptLoop soc `onException` sClose soc
 
+acceptLoop :: Socket -> IO ()
 acceptLoop soc = do
-  (nsoc, addr) <- accept soc
-  forkIO $ echoLoop nsoc
+  (nsoc, _) <- accept soc
+  forkIO (echoLoop nsoc `onException` sClose nsoc)
   acceptLoop soc
 
+echoLoop :: Socket -> IO ()
 echoLoop soc = do
-  sequence_ (repeat (do { -- ioアクションの無限リスト
-                          (buff,_) <- recvFrom soc 4096;
-                          send soc buff
-                     }))
-  `catch` (\(SomeException e) -> return ())
-  `finally` sClose soc
+    bs <- recv soc 4096;
+    if BS.length bs == 0
+       then sClose soc
+       else do
+        send soc bs
+        echoLoop soc
