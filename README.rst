@@ -223,17 +223,23 @@ result::
 
 
 Python 2.7.2 + gevent
-----------------------
+-------------------------------
 
 server::
 
    ~/python2.7/bin/python echo_server_gevent.py
 
-result::
+result for gevent 0.13.6::
 
    Throughput: 17751.24 [#/sec]
    Throughput: 17607.05 [#/sec]
    Throughput: 17537.34 [#/sec]
+
+result for gevent 1.0a2::
+
+   Throughput: 19433.81 [#/sec]
+   Throughput: 19455.66 [#/sec]
+   Throughput: 19371.97 [#/sec]
 
 
 Python 2.7.2 + Twisted
@@ -251,4 +257,4 @@ result::
 
 
 ..
-   vim: paste sw=3 expandtabs
+   vim: paste sw=3 expandtab
