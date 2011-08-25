@@ -74,6 +74,27 @@ result::
    Throughput: 121306.08 [#/sec]
    Throughput: 122511.62 [#/sec]
 
+C++ libev
+-------------
+
+server::
+
+   ./server_libev
+
+result::
+
+   $ sh bench.sh 
+   Throughput: 96757.33 [#/sec]
+   Throughput: 132618.52 [#/sec]
+   Throughput: 132365.60 [#/sec]
+   $ sh bench.sh 
+   Throughput: 134189.84 [#/sec]
+   Throughput: 133924.71 [#/sec]
+   Throughput: 133706.54 [#/sec]
+
+libev have dynamic event queue size. So, first benchmark is slower than
+after.
+
 
 Haskell
 ----------
