@@ -114,7 +114,7 @@ int main() {
     ev_init(&watcher, event_server);
     ev_io_set(&watcher, sock, EV_READ);
     ev_io_start(loop, &watcher);
-    ev_run(loop, 0);
+    ev_loop(loop, 0);
 
     close(sock);
 
