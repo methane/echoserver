@@ -1,7 +1,7 @@
 %% http://jerith.za.net/writings/erlangsockettut.html
 
 %% module name must be the same as the filename
--module(echo_server_erlang).
+-module(server_erlang).
 %% do_echo exported for using erlang:spawn/3
 -export([do_echo/1, listen/1]).
 

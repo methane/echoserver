@@ -40,7 +40,7 @@ C++ epoll
 
 server::
 
-   ./echo_server_epoll
+   ./server_epoll
 
 result::
 
@@ -52,7 +52,7 @@ with forking.
 
 server::
 
-   ./echo_server_epoll -f2
+   ./server_epoll -f2
 
 result::
 
@@ -66,7 +66,7 @@ C++ thread
 
 server::
 
-   ./echo_server_thread -c120
+   ./server_thread -c120
 
 result::
 
@@ -82,7 +82,7 @@ GHC 7.0.3
 
 server::
 
-   ./echo_server_haskell
+   ./server_haskell
 
 result::
 
@@ -99,9 +99,9 @@ server::
    $ erl
    Erlang R14A (erts-5.8) [source] [64-bit] [smp:2:2] [rq:2] [async-threads:0] [hipe] [kernel-poll:false]
    Eshell V5.8  (abort with ^G)
-   1> c(echo_server_erlang, [native, {hipe, ['O3']}]).
-   {ok,echo_server_erlang}
-   2> echo_server_erlang:listen(5000).
+   1> c(server_erlang, [native, {hipe, ['O3']}]).
+   {ok,server_erlang}
+   2> server_erlang:listen(5000).
 
 result::
 
@@ -115,7 +115,7 @@ Go (r59)
 
 server::
 
-   $ ./echo_server_go
+   $ ./server_go
 
 result::
 
@@ -125,7 +125,7 @@ result::
 
 server::
 
-   $ GOMAXPROCS=3 ./echo_server_go
+   $ GOMAXPROCS=3 ./server_go
 
 result::
 
@@ -139,7 +139,7 @@ pypy 1.6 + Tornado
 
 server::
 
-   ~/pypy-1.6/bin/pypy echo_server_tornado.py 
+   ~/pypy-1.6/bin/pypy server_tornado.py 
 
 result::
 
@@ -153,7 +153,7 @@ pypy 1.6 + twisted
 
 server::
 
-   ~/pypy-1.6/bin/pypy echo_server_twisted.py 
+   ~/pypy-1.6/bin/pypy server_twisted.py 
 
 result::
 
@@ -167,7 +167,7 @@ node.js  0.5.4
 
 server::
 
-   ~/local/node-0.5.4/bin/node echo_server_nodejs.js
+   ~/local/node-0.5.4/bin/node server_node.js
 
 
 result::
@@ -183,7 +183,7 @@ Ruby 1.9.1 + EventMachine 0.12.10
 
 server::
 
-   $ ruby1.9.1 echo_server_em.rb
+   $ ruby1.9.1 server_em.rb
 
 result::
 
@@ -198,7 +198,7 @@ Ruby 1.9.1 + rev 0.3.2
 
 server::
 
-   $ ruby1.9.1 echo_server_rev.rb
+   $ ruby1.9.1 server_rev.rb
 
 result::
 
@@ -213,7 +213,7 @@ Python 2.7.2 + Tornado
 
 server::
 
-   ~/python2.7/bin/python echo_server_tornado.py
+   ~/python2.7/bin/python server_tornado.py
 
 result::
 
@@ -227,7 +227,7 @@ Python 2.7.2 + gevent
 
 server::
 
-   ~/python2.7/bin/python echo_server_gevent.py
+   ~/python2.7/bin/python server_gevent.py
 
 result for gevent 0.13.6::
 
@@ -244,7 +244,7 @@ result for gevent 1.0a2::
 
 gevent-1.0a2 without greenlet. Event driven fashion::
 
-   ~/python2.7/bin/python echo_server_gevent_loop.py
+   ~/python2.7/bin/python server_gevent_loop.py
 
 result::
 
@@ -259,7 +259,7 @@ Python 2.7.2 + Twisted
 
 server::
 
-   ~/python2.7/bin/python echo_server_twidted.py
+   ~/python2.7/bin/python server_twidted.py
 
 result::
 
