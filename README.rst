@@ -242,6 +242,18 @@ result for gevent 1.0a2::
    Throughput: 19371.97 [#/sec]
 
 
+gevent-1.0a2 without greenlet. Event driven fashion::
+
+   ~/python2.7/bin/python echo_server_gevent_loop.py
+
+result::
+
+   Throughput: 62942.07 [#/sec]
+   Throughput: 63338.58 [#/sec]
+   Throughput: 62814.45 [#/sec]
+
+
+
 Python 2.7.2 + Twisted
 ----------------------
 
