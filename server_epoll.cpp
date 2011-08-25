@@ -18,7 +18,6 @@
 
 using namespace std;
 
-static volatile unsigned long long process_count;
 
 struct conn {
     int sock;
