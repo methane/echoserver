@@ -155,8 +155,32 @@ result::
    Throughput: 52068.27 [#/sec]
 
 
-pypy 1.6 + Tornado
----------------------
+Go (1)
+-------
+
+server::
+
+   $ ./server_go
+
+result::
+
+   Throughput: 41161.18 [#/sec]
+   Throughput: 44335.79 [#/sec]
+   Throughput: 44368.17 [#/sec]
+
+server::
+
+   $ GOMAXPROCS=3 ./server_go
+
+result::
+
+   Throughput: 55872.09 [#/sec]
+   Throughput: 55857.82 [#/sec]
+   Throughput: 55949.57 [#/sec]
+
+
+pypy 1.6 + Tornado 2.0
+-----------------------
 
 server::
 
@@ -167,6 +191,20 @@ result::
    Throughput: 79193.30 [#/sec]
    Throughput: 81063.83 [#/sec]
    Throughput: 81442.70 [#/sec]
+
+
+pypy 1.8 + Tornado 2.2
+-----------------------
+
+server::
+
+   ~/pypy-1.8/bin/pypy server_tornado.py 
+
+result::
+
+   Throughput: 84852.55 [#/sec]
+   Throughput: 106760.88 [#/sec]
+   Throughput: 107032.43 [#/sec]
 
 
 pypy 1.6 + twisted
