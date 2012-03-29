@@ -19,8 +19,7 @@ null_server_thread: null_server_thread.cpp
 	$(CXX) $(CXXFLAGS) -o $@ $<
 
 server_go: server_go.go
-	6g -o server_go.6 $<
-	6l -o $@ server_go.6
+	go build $<
 
 server_haskell: server_haskell.hs
 	ghc6 -threaded -O --make -o $@ $<
