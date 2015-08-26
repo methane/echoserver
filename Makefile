@@ -27,5 +27,8 @@ server_haskell: server_haskell.hs
 server_erlang: server_erlang.erl
 	erlc $<
 
+server_libmill: server_libmill.c
+	$(CC) $(CFLAGS) $< -o $@ -lmill
+
 client: client.c
 	$(CC) $(CFLAGS) $< -o $@
