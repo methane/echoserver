@@ -32,7 +32,7 @@ server_libmill: server_libmill.c
 
 server_java:
 	cd server_java && mvn package
-	cp server_java/target/echoserver-0.0.1-SNAPSHOT.jar server_java.jar
+	cp server_java/target/echoserver-0.0.1-SNAPSHOT-jar-with-dependencies.jar server_java.jar
 
 client_libmill: client_libmill.c
 	$(CC) $(CFLAGS) $< -o $@ -lmill
